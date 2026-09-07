@@ -41,7 +41,8 @@ const ChangePasswordForm = () => {
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const session = useSession();
-  const token = (session?.data?.user as { accessToken: string })?.accessToken;
+  const token = (session?.data?.user as { token?: string })?.token;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
      defaultValues: {
@@ -53,36 +54,38 @@ const ChangePasswordForm = () => {
 
     const { mutate, isPending } = useMutation({
     mutationKey: ["changePassword"],
-    mutationFn: (values: { oldPassword: string; newPassword: string }) =>
-      fetch(`/api/auth-backend/auth/change-password`, {
+    mutationFn: (values: { oldPassword: string; newPassword: string; confirmPassword: string }) =>
+      fetch(`${apiUrl}/users/reset-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(values),
-      }).then((res) => res.json()),
+      }).then(async (res) => {
+        const result = await res.json();
+        if (!res.ok || !result?.status) throw new Error(result?.message || "Password change failed");
+        return result;
+      }),
     onSuccess: (data) => {
-      if (!data?.success) {
-        toast.error(data?.message || "Something went wrong");
-        return;
-      }
       toast.success(data?.message || "Password Change successfully!");
       form.reset();
     },
+    onError: (error) => toast.error(error instanceof Error ? error.message : "Password change failed"),
   });
 
 
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
-        const payload = {
+    const payload = {
       oldPassword: values?.oldPassword,
       newPassword: values?.newPassword,
+      confirmPassword: values?.confirmPassword,
     };
     mutate(payload);
   }
   return (
-    <div className='rounded-2xl border border-[#E5E8E2] bg-white px-4 py-5 shadow-[0_4px_18px_rgba(50,59,44,0.06)] sm:px-6 sm:py-6 lg:px-8'>
+    <div className='settings-card rounded-2xl border border-[#E5E8E2] bg-white px-4 py-5 shadow-[0_4px_18px_rgba(50,59,44,0.06)] sm:px-6 sm:py-6 lg:px-8'>
        <div className="pb-2">
         <Link href="/settings" className="flex items-center gap-1 text-sm text-gray-500 font-medium transition-colors hover:text-primary hover:underline">
           <ChevronLeft /> Back to Settings
@@ -117,7 +120,7 @@ const ChangePasswordForm = () => {
                       />
                     </FormControl>
                     <button type="button" aria-label={showCurrent ? "Hide current password" : "Show current password"}
-                      className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-gray-600 hover:bg-[#F0F2EE] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       onClick={() => setShowCurrent((prev) => !prev)}
                     >
                       {showCurrent ? (
@@ -150,7 +153,7 @@ const ChangePasswordForm = () => {
                       />
                     </FormControl>
                     <button type="button" aria-label={showNew ? "Hide new password" : "Show new password"}
-                      className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-gray-600 hover:bg-[#F0F2EE] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       onClick={() => setShowNew((prev) => !prev)}
                     >
                       {showNew ? (
@@ -184,7 +187,7 @@ const ChangePasswordForm = () => {
                       />
                     </FormControl>
                     <button type="button" aria-label={showConfirm ? "Hide confirmed password" : "Show confirmed password"}
-                      className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-gray-600 hover:bg-[#F0F2EE] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-gray-600  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                       onClick={() => setShowConfirm((prev) => !prev)}
                     >
                       {showConfirm ? (
@@ -207,7 +210,7 @@ const ChangePasswordForm = () => {
                 type="button"
                 variant="outline"
                 onClick={() => form.reset()}
-                className="h-11 w-full rounded-xl border border-[#E7A7B0] px-6 text-sm font-medium text-[#D92D20] hover:bg-[#FFF0F1] sm:w-auto"
+                className="settings-discard-button h-11 w-full rounded-xl border border-[#E7A7B0] px-6 text-sm font-medium text-[#D92D20] sm:w-auto"
               >
                 Discard Changes
               </Button>

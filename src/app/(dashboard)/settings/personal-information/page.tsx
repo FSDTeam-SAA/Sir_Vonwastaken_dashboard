@@ -5,8 +5,8 @@ import DashboardOverviewHeader from '../../_components/dashboard-overview-header
 
 const PersonalInfoPage = () => {
   return (
-    <div className=''>
-      <DashboardOverviewHeader title="Personal Information" description="Manage your profile, contact details, and public information." />
+    <div className='settings-shell min-h-[calc(100vh-1px)]'>
+      <DashboardOverviewHeader title="Personal Information" description="Manage your profile, contact details, and public information." showThemeToggle />
       <div className="mx-auto grid w-full max-w-[1600px] grid-cols-1 gap-5 p-4 sm:p-6 xl:grid-cols-7">
         <div className="xl:col-span-2">
 

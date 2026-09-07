@@ -21,5 +21,5 @@ export function ThemeToggle() {
     window.localStorage.setItem("signal-studio-theme", nextLight ? "light" : "dark");
   };
 
-  return <button type="button" onClick={toggle} aria-label={`Switch to ${light ? "dark" : "light"} mode`} title={`Switch to ${light ? "dark" : "light"} mode`} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-slate-300 transition hover:bg-white/10 hover:text-white light:border-slate-200 light:text-slate-600 light:hover:bg-slate-100 light:hover:text-slate-900">{light ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}</button>;
+  return <button type="button" onClick={toggle} aria-label={`Switch to ${light ? "dark" : "light"} mode`} title={`Switch to ${light ? "dark" : "light"} mode`} className="theme-toggle inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-300 transition hover:bg-white/10 hover:text-white light:border-slate-200 light:text-slate-600 light:hover:bg-slate-100 light:hover:text-slate-900">{light ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}</button>;
 }

@@ -5,8 +5,8 @@ import DashboardOverviewHeader from '../../_components/dashboard-overview-header
 
 const ChangePasswordPage = () => {
   return (
-    <div>
-      <DashboardOverviewHeader title="Password & Security" description="Update your password and keep your dashboard account secure." />
+    <div className="settings-shell min-h-[calc(100vh-1px)]">
+      <DashboardOverviewHeader title="Password & Security" description="Update your password and keep your dashboard account secure." showThemeToggle />
        <div className="mx-auto grid w-full max-w-[1600px] grid-cols-1 gap-5 p-4 sm:p-6 xl:grid-cols-7">
         <div className="xl:col-span-2">
 

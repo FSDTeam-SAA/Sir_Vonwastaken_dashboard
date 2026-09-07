@@ -1,10 +1,16 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { ChevronLeft } from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -12,337 +18,247 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { useSession } from "next-auth/react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { UserProfileApiResponse } from "../../_components/user-data-type"
-import { useEffect } from "react"
-import { toast } from "sonner"
-import PersonalInfoSkeleton from "../../_components/personal-info-skeleton"
-import Link from "next/link"
-import { ChevronLeft } from "lucide-react"
-import { StateError } from "@/components/shared/async-states"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import PersonalInfoSkeleton from "../../_components/personal-info-skeleton";
+import { UserApiResponse } from "../../_components/user-data-type";
 
 const formSchema = z.object({
-  fullName: z.string().min(2, {
-    message: "Full Name must be at least 2 characters.",
-  }),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }).min(2, {
-    message: "Email must be at least 2 characters.",
-  }),
-  phoneNumber: z.string().min(2, {
-    message: "Phone Number must be at least 2 characters.",
-  }),
-  gender: z.enum(["male", "female"]).optional(),
-  bio: z.string().optional(),
-  city: z.string().min(2, {
-    message: "Street Address must be at least 2 characters.",
-  }),
-  address: z.string().min(2, {
-    message: "Location must be at least 2 characters.",
-  }),
-  postcode: z.string().min(2, {
-    message: "Postal Code must be at least 2 characters.",
-  })
-})
+  firstName: z.string().min(2, "First name must be at least 2 characters."),
+  lastName: z.string().min(2, "Last name must be at least 2 characters."),
+  email: z.string().email("Please enter a valid email address."),
+  address: z.string().optional(),
+  phoneNumber: z.string().optional(),
+});
+
+type SessionUser = { id?: string; token?: string };
 
 const PersonalInformationForm = () => {
   const queryClient = useQueryClient();
+  const { data: session } = useSession();
+  const sessionUser = session?.user as SessionUser | undefined;
+  const userId = sessionUser?.id;
+  const token = sessionUser?.token;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-  const { data: session } = useSession()
-  const token = (session?.user as { accessToken?: string })?.accessToken
-
-  const { data, isLoading, isError, refetch } = useQuery<UserProfileApiResponse>({
-    queryKey: ["user-profile"],
+  const { data, isLoading } = useQuery<UserApiResponse>({
+    queryKey: ["user-profile", userId],
     queryFn: async () => {
-      const res = await fetch(
-        `/api/auth-backend/user/profile`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      )
-      return res.json()
+      const response = await fetch(`${apiUrl}/users/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const result = await response.json();
+      if (!response.ok || !result?.status)
+        throw new Error(result?.message || "Unable to load profile");
+      return result;
     },
-    enabled: !!token,
+    enabled: Boolean(apiUrl && userId && token),
     staleTime: 1000 * 60 * 5,
-  })
+  });
 
-  const user = data?.data
-
-
-
-
-
-
-
+  const user = data?.data;
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullName: "",
+      firstName: "",
+      lastName: "",
       email: "",
-      phoneNumber: "",
-      gender: "male",
-      bio: "",
-      city: "",
       address: "",
-      postcode: "",
-
+      phoneNumber: "",
     },
-  })
+  });
 
   useEffect(() => {
-    if (user) {
+    if (user)
       form.reset({
-        fullName:
-          user.fullName ||
-          [user.firstName, user.lastName].filter(Boolean).join(" "),
+        firstName: user.firstName ?? "",
+        lastName: user.lastName ?? "",
         email: user.email ?? "",
-        phoneNumber: user.phoneNumber ?? "",
-        gender: user.gender ?? "male",
-        bio: user.bio ?? "",
-        city: user.city ?? "",
         address: user.address ?? "",
-        postcode: user.postcode ?? "",
-      })
-    }
-  }, [user, form])
-
-
-
-
-
+        phoneNumber: user.phoneNumber ?? "",
+      });
+  }, [form, user]);
 
   const { mutate, isPending } = useMutation({
-    mutationKey: ["update-profile"],
+    mutationKey: ["update-profile", userId],
     mutationFn: async (values: z.infer<typeof formSchema>) => {
-      const payload = {
-        email: values.email,
-        phoneNumber: values.phoneNumber,
-        gender: values.gender,
-        bio: values.bio,
-        city: values.city,
-        address: values.address,
-        postcode: values.postcode,
-        fullName: values.fullName,
-      };
-
-      const res = await fetch(`/api/auth-backend/user/profile`, {
+      const response = await fetch(`${apiUrl}/users/update-user/${userId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(payload)
-      })
-      return res.json()
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          firstName: values.firstName,
+          lastName: values.lastName,
+          address: values.address,
+          phoneNumber: values.phoneNumber,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result?.status)
+        throw new Error(result?.message || "Profile update failed");
+      return result;
     },
-    onSuccess: async (data) => {
-      if (!data?.success) {
-        toast.error(data?.message || "Something went wrong")
-        return
-      }
-      toast.success(data?.message || "Profile updated successfully")
-      await queryClient.invalidateQueries({ queryKey: ["user-profile"] })
+    onSuccess: async (result) => {
+      toast.success(result.message || "Profile updated successfully");
+      await queryClient.invalidateQueries({
+        queryKey: ["user-profile", userId],
+      });
     },
-    onError: () => toast.error("Update failed"),
-  })
+    onError: (error) =>
+      toast.error(
+        error instanceof Error ? error.message : "Profile update failed",
+      ),
+  });
 
-  // loading 
-  if (isLoading) {
-    return <div className="">
-      <PersonalInfoSkeleton/>
-    </div>
-  }
-  if (isError) {
-    return <StateError message="Your personal information could not be loaded." action={{ label: "Try again", onClick: refetch }} />
-  }
+  if (isLoading) return <PersonalInfoSkeleton />;
 
-  // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    mutate(values)
-  }
+  const fieldClass =
+    "h-12 w-full rounded-xl border-[#C8CEC5] bg-transparent px-3 text-base text-[#3B4759] outline-none placeholder:text-[#8E959F] focus-visible:ring-2 focus-visible:ring-primary";
 
   return (
-    <div className='h-full rounded-2xl border border-[#E5E8E2] bg-white px-4 py-5 shadow-[0_4px_18px_rgba(50,59,44,0.06)] sm:px-6 sm:py-6 lg:px-8'>
-       <div className="pb-2">
-        <Link href="/settings" className="flex items-center gap-1 text-sm text-gray-500 font-medium transition-colors hover:text-primary hover:underline">
-          <ChevronLeft /> Back to Settings
-        </Link>
-      </div>
-      <div>
-        <h4 className='text-xl md:text-2xl text-[#343A40] leading-[120%] font-semibold'>Personal Information</h4>
-        <p className='text-base font-normal text-[#68706A] leading-[120%] pt-3'>Manage your personal information and profile details.</p>
-      </div>
-      {/* form  */}
-      <div className="pt-6">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+    <div className="settings-card h-full rounded-2xl border border-[#E5E8E2] bg-white px-4 py-5 shadow-[0_4px_18px_rgba(50,59,44,0.06)] sm:px-6 sm:py-6 lg:px-8">
+      <Link
+        href="/settings"
+        className="flex items-center gap-1 pb-5 text-sm font-medium text-gray-500 transition-colors hover:text-primary hover:underline"
+      >
+        <ChevronLeft className="h-4 w-4" /> Back to Settings
+      </Link>
+      <h2 className="text-xl font-semibold text-[#343A40] md:text-2xl">
+        Personal Information
+      </h2>
+      <p className="settings-muted pt-2 text-sm sm:text-base">
+        Manage your personal information and contact details.
+      </p>
 
-            <div className="grid gap-6 md:grid-cols-[max-content_minmax(0,1fr)] items-center">
-
-              <FormField
-                control={form.control}
-                name="gender"
-                render={({ field }) => (
-                  <FormItem className="w-full">
-                    <FormLabel className="text-base text-[#3B4759] leading-[120%] font-medium">
-                      Gender
-                    </FormLabel>
-                    <FormControl>
-                      <div className="flex flex-wrap gap-4">
-                        <label className="inline-flex items-center gap-2 text-sm text-[#3B4759]">
-                          <input
-                            type="radio"
-                            value="male"
-                            checked={field.value === "male"}
-                            onChange={() => field.onChange("male")}
-                            className="h-4 w-4 rounded border-[#C0C3C1] text-primary focus:ring-primary"
-                          />
-                          Male
-                        </label>
-                        <label className="inline-flex items-center gap-2 text-sm text-[#3B4759]">
-                          <input
-                            type="radio"
-                            value="female"
-                            checked={field.value === "female"}
-                            onChange={() => field.onChange("female")}
-                            className="h-4 w-4 rounded border-[#C0C3C1] text-primary focus:ring-primary"
-                          />
-                          Female
-                        </label>
-                      </div>
-                    </FormControl>
-                    <FormMessage className="text-red-500" />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 gap-6">
-              <FormField
-                control={form.control}
-                name="fullName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base text-[#3B4759] leading-[120%] font-medium">Full Name</FormLabel>
-                    <FormControl>
-                      <Input className="h-[48px] w-full rounded-[4px] border-[#C0C3C1] p-3 placeholder:text-[#8E959F] text-[#3B4759] text-base ring-0 outline-none leading-[120%] font-normal" placeholder="Maria Jasmin" {...field} />
-                    </FormControl>
-                    <FormMessage className="text-red-500" />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base text-[#3B4759] leading-[120%] font-medium">Email Address</FormLabel>
-                    <FormControl>
-                      <Input disabled className="h-[48px] w-full rounded-[4px] border-[#C0C3C1] p-3 placeholder:text-[#8E959F] text-[#3B4759] text-base ring-0 outline-none leading-[120%] font-normal" placeholder="bessieedwards@gmail.com" {...field} />
-                    </FormControl>
-                    <FormMessage className="text-red-500" />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="phoneNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base text-[#3B4759] leading-[120%] font-medium">Phone Number</FormLabel>
-                    <FormControl>
-                      <Input className="h-[48px] w-full rounded-[4px] border-[#C0C3C1] p-3 placeholder:text-[#8E959F] text-[#3B4759] text-base ring-0 outline-none leading-[120%] font-normal" placeholder="+1 (555) 123-4567" {...field} />
-                    </FormControl>
-                    <FormMessage className="text-red-500" />
-                  </FormItem>
-                )}
-              />
-
-            </div>
-            <div className="grid grid-cols-1 gap-6">
-              <FormField
-                control={form.control}
-                name="bio"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base text-[#3B4759] leading-[120%] font-medium">Bio</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        className="h-[100px] w-full rounded-[4px] border-[#C0C3C1] p-3 placeholder:text-[#8E959F] text-[#3B4759] text-base ring-0 outline-none leading-[120%] font-normal"
-                        placeholder="Write a short bio"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-500" />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="grid grid-cols-1">
-              <FormField
-                control={form.control}
-                name="address"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base text-[#3B4759] leading-[120%] font-medium">Street Address</FormLabel>
-                    <FormControl>
-                      <Input className="h-[48px] w-full rounded-[4px] border-[#C0C3C1] p-3 placeholder:text-[#8E959F] text-[#3B4759] text-base ring-0 outline-none leading-[120%] font-normal" placeholder="1234 Oak Avenue, San Francisco, CA 94102" {...field} />
-                    </FormControl>
-                    <FormMessage className="text-red-500" />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="city"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base text-[#3B4759] leading-[120%] font-medium">Location</FormLabel>
-                    <FormControl>
-                      <Input className="h-[48px] w-full rounded-[4px] border-[#C0C3C1] p-3 placeholder:text-[#8E959F] text-[#3B4759] text-base ring-0 outline-none leading-[120%] font-normal" placeholder="Florida, USA" {...field} />
-                    </FormControl>
-                    <FormMessage className="text-red-500" />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="postcode"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base text-[#3B4759] leading-[120%] font-medium">Postal Code</FormLabel>
-                    <FormControl>
-                      <Input className="h-[48px] w-full rounded-[4px] border-[#C0C3C1] p-3 placeholder:text-[#8E959F] text-[#3B4759] text-base ring-0 outline-none leading-[120%] font-normal" placeholder="30301" {...field} />
-                    </FormControl>
-                    <FormMessage className="text-red-500" />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="flex w-full flex-col-reverse gap-3 border-t border-[#ECEEEA] pt-5 sm:flex-row sm:items-center sm:justify-end">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => form.reset()}
-                className="h-11 w-full rounded-xl border border-[#E7A7B0] px-6 text-sm font-medium text-[#D92D20] hover:bg-[#FFF0F1] sm:w-auto"
-              >
-                Discard Changes
-              </Button>
-
-
-              <Button disabled={isPending} className="h-11 w-full rounded-xl px-6 text-sm font-semibold text-white sm:w-auto" type="submit">{isPending ? "Updating..." : "Save Changes"}</Button>
-            </div>
-          </form>
-        </Form>
-      </div>
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit((values) => mutate(values))}
+          className="space-y-5 pt-7"
+        >
+          <div className="grid gap-5 md:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="firstName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base font-medium text-[#3B4759]">
+                    First Name
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      className={fieldClass}
+                      placeholder="First name"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base font-medium text-[#3B4759]">
+                    Last Name
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      className={fieldClass}
+                      placeholder="Last name"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-base font-medium text-[#3B4759]">
+                  Email Address
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    disabled
+                    className={fieldClass}
+                    placeholder="you@example.com"
+                  />
+                </FormControl>
+                <p className="settings-muted text-xs">
+                  Email is managed by your account and cannot be changed here.
+                </p>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="phoneNumber"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-base font-medium text-[#3B4759]">
+                  Phone Number
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    className={fieldClass}
+                    placeholder="+880 1XXXXXXXXX"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-base font-medium text-[#3B4759]">
+                  Address
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    className={fieldClass}
+                    placeholder="Your address"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="flex w-full flex-col-reverse gap-3 border-t border-[#ECEEEA] pt-5 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => form.reset()}
+              className="settings-discard-button h-11 w-full rounded-xl border-[#E7A7B0] text-[#D92D20] sm:w-auto"
+            >
+              Discard Changes
+            </Button>
+            <Button
+              disabled={isPending}
+              type="submit"
+              className="h-11 w-full rounded-xl px-6 text-sm font-semibold text-white sm:w-auto"
+            >
+              {isPending ? "Updating..." : "Save Changes"}
+            </Button>
+          </div>
+        </form>
+      </Form>
     </div>
-  )
-}
+  );
+};
 
-export default PersonalInformationForm
+export default PersonalInformationForm;
