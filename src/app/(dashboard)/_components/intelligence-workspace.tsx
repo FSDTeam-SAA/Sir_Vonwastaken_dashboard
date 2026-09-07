@@ -119,8 +119,8 @@ export function Shell({
         onConfirm={handleLogout}
       />
       <main className="lg:pl-60 ">
-        <header className="sticky top-0 z-10 border-b border-white/10 bg-[#0b0b12]/90 px-4 py-4 backdrop-blur-xl sm:px-6 lg:px-6 ">
-          <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 ">
+        <header className="sticky top-0 z-10 border-b border-white/10 bg-[#0b0b12]/90 py-4 backdrop-blur-xl">
+          <div className="flex w-full items-center justify-between gap-4 px-4 sm:px-6">
             <div>
               <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-fuchsia-400">
                 {eyebrow || "Creator workspace"}
@@ -134,7 +134,7 @@ export function Shell({
               <ThemeToggle />
             </div>
           </div>
-          <div className="mt-4 flex gap-1 overflow-x-auto lg:hidden ">
+          <div className="mt-4 flex w-full gap-1 overflow-x-auto px-4 sm:px-6 lg:hidden">
             {nav.map(({ href, label }) => {
               const active =
                 href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -151,7 +151,7 @@ export function Shell({
             })}
           </div>
         </header>
-        <div className="mx-auto w-full max-w-[1600px] py-5 sm:py-7">
+        <div className="w-full px-4 py-5 sm:px-6 sm:py-7">
           {children}
         </div>
       </main>
