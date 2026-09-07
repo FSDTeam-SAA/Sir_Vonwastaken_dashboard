@@ -7,68 +7,64 @@ import { useSession } from "next-auth/react";
 import Image, { type StaticImageData } from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { UserProfileApiResponse } from "./user-data-type";
+import { UserApiResponse } from "./user-data-type";
 
 import NoUserImage from "../../../../../public/assets/images/no-user.jpeg"
 
 
 const ProfilePicture = () => {
   const session = useSession();
-  const token = (session?.data?.user as { accessToken: string })?.accessToken;
+  const sessionUser = session?.data?.user as { id?: string; token?: string } | undefined;
+  const userId = sessionUser?.id;
+  const token = sessionUser?.token;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const queryClient = useQueryClient();
 
   const [profilePicture, setProfilePicture] = useState<string | StaticImageData>(NoUserImage);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  console.log(setProfilePicture)
-
-  // get api
-  const { data } = useQuery<UserProfileApiResponse>({
-    queryKey: ["user-profile"],
+  const { data } = useQuery<UserApiResponse>({
+    queryKey: ["user-profile", userId],
     queryFn: () =>
-      fetch(`/api/auth-backend/user/profile`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }).then((res) => res.json()),
-      enabled: !!token
+      fetch(`${apiUrl}/users/${userId}`, { headers: { Authorization: `Bearer ${token}` } }).then(async (res) => {
+        const result = await res.json();
+        if (!res.ok || !result?.status) throw new Error(result?.message || "Unable to load profile");
+        return result;
+      }),
+      enabled: Boolean(apiUrl && userId && token),
   });
 
-  // update api
   const { mutate, isPending } = useMutation({
     mutationKey: ["update-profile-image"],
     mutationFn: async (formData: FormData) => {
       const res = await fetch(
-        `/api/auth-backend/user/profile`,
+        `${apiUrl}/users/update-avatar`,
         {
-          method: "PUT",
+          method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
           },
           body: formData,
         }
       );
-      if (!res.ok) throw new Error("Upload failed");
-      return res.json();
+      const result = await res.json();
+      if (!res.ok || !result?.status) throw new Error(result?.message || "Upload failed");
+      return result;
     },
     onSuccess: async (data) => {
       toast.success(data?.message || "Profile image updated successfully!");
-      await queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-      console.log("Response:", data);
+      queryClient.setQueryData(["user-profile", userId], data);
+      await queryClient.invalidateQueries({ queryKey: ["user-profile", userId] });
     },
-    onError: (error) => {
-      toast.error("Upload failed");
-      console.error(error);
-    },
+    onError: (error) => toast.error(error instanceof Error ? error.message : "Upload failed"),
   });
 
   useEffect(() => {
-    const image = data?.data?.profilePicture;
+    const image = data?.data?.profileImage;
     if (image) {
       setProfilePicture(image);
     }
-  }, [data?.data?.profilePicture]);
+  }, [data?.data?.profileImage]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -83,7 +79,7 @@ const ProfilePicture = () => {
 
     // Upload file to backend
     const formData = new FormData();
-    formData.append("profilePicture", file, file.name);
+    formData.append("avatar", file, file.name);
     mutate(formData);
   };
 

@@ -714,11 +714,11 @@ function ProfileData({ data }: { data: Record<string, unknown> }) {
                   )
                 : profileMetric(data, metric.keys)}
             </p>
-            {profileNumber(data, metric.keys) === null && (
+            {/* {profileNumber(data, metric.keys) === null && (
               <p className="mt-2 text-xs text-amber-200/70">
                 Not returned by backend
               </p>
-            )}
+            )} */}
           </div>
         ))}
       </div>

@@ -156,6 +156,473 @@ html.light .studio-shell [class*="bg-\[#151522\]"] {
   background-color: #ffffff;
 }
 
+/* Settings has a self-contained theme so profile and security forms remain
+   readable even though the rest of the dashboard keeps its existing surface. */
+.settings-shell {
+  background: #f7f8f6;
+  color: #30352d;
+}
+
+.settings-shell .settings-header {
+  border-color: #e7e2da;
+  background: rgba(246, 241, 234, 0.95);
+}
+
+.settings-shell .settings-card {
+  border-color: #e5e8e2;
+  background: #ffffff;
+}
+
+.settings-shell .settings-muted,
+.settings-shell [class~="text-gray-500"],
+.settings-shell [class~="text-[#68706A]"],
+.settings-shell [class~="text-[#747A70]"] {
+  color: #68706a;
+}
+
+.settings-shell [class~="text-[#343A40]"],
+.settings-shell [class~="text-[#3B4759]"],
+.settings-shell [class~="text-[#5B6574]"] {
+  color: #30352d;
+}
+
+.settings-shell input,
+.settings-shell textarea {
+  border-color: #c8cec5;
+  background: #ffffff;
+  color: #30352d;
+}
+
+.settings-shell input:disabled {
+  background: #f1f3ef;
+  color: #68706a;
+}
+
+.settings-shell input::placeholder,
+.settings-shell textarea::placeholder {
+  color: #8e9590;
+}
+
+.settings-shell .settings-sidebar-details,
+.settings-shell [class~="border-[#ECEEEA]"] {
+  border-color: #eceeea;
+}
+
+.settings-shell .settings-sidebar-link {
+  color: #68706a;
+}
+
+.settings-shell .settings-sidebar-link:hover {
+  background: #f1f4ef;
+  color: hsl(var(--primary));
+}
+
+.settings-shell .settings-sidebar-link-active {
+  background: hsl(var(--primary) / 0.1);
+  color: hsl(var(--primary));
+  box-shadow: inset 3px 0 0 hsl(var(--primary));
+}
+
+.settings-shell .theme-toggle {
+  border-color: #d7ddd3;
+  background: #ffffff;
+  color: #5e6755;
+}
+
+.settings-shell .theme-toggle:hover {
+  background: #eef2eb;
+  color: #30352d;
+}
+
+html:not(.light) .settings-shell {
+  background: #0b0b12;
+  color: #f1f5f9;
+}
+
+html:not(.light) .settings-shell .settings-header {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(11, 11, 18, 0.94);
+}
+
+html:not(.light) .settings-shell .settings-header h1 {
+  color: #f1f5f9;
+}
+
+html:not(.light) .settings-shell .settings-header p {
+  color: #94a3b8;
+}
+
+html:not(.light) .settings-shell .settings-card {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: #151522;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+html:not(.light) .settings-shell .settings-muted,
+html:not(.light) .settings-shell [class~="text-gray-500"],
+html:not(.light) .settings-shell [class~="text-[#68706A]"],
+html:not(.light) .settings-shell [class~="text-[#747A70]"] {
+  color: #94a3b8;
+}
+
+html:not(.light) .settings-shell [class~="text-[#343A40]"],
+html:not(.light) .settings-shell [class~="text-[#3B4759]"],
+html:not(.light) .settings-shell [class~="text-[#5B6574]"] {
+  color: #f1f5f9;
+}
+
+html:not(.light) .settings-shell input,
+html:not(.light) .settings-shell textarea {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: #10101a;
+  color: #f8fafc;
+}
+
+html:not(.light) .settings-shell input:disabled {
+  background: #20202d;
+  color: #aeb8c7;
+}
+
+html:not(.light) .settings-shell input::placeholder,
+html:not(.light) .settings-shell textarea::placeholder {
+  color: #829287;
+}
+
+html:not(.light) .settings-shell .settings-sidebar-details,
+html:not(.light) .settings-shell [class~="border-[#ECEEEA]"] {
+  border-color: #2d3a31;
+}
+
+html:not(.light) .settings-shell .settings-sidebar-link {
+  color: #94a3b8;
+}
+
+html:not(.light) .settings-shell .settings-sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+html:not(.light) .settings-shell .settings-sidebar-link-active {
+  background: rgba(103, 232, 249, 0.1);
+  color: #a5f3fc;
+  box-shadow: inset 3px 0 0 #67e8f9;
+}
+
+html:not(.light) .settings-shell .theme-toggle {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
+}
+
+html:not(.light) .settings-shell .theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.settings-route .dashboard-mobile-nav {
+  display: flex;
+}
+
+@media (min-width: 1024px) {
+  .settings-route .dashboard-mobile-nav {
+    display: none;
+  }
+}
+
+/* Settings light mode follows the same cool dashboard palette as Trends. */
+html.light .settings-route {
+  background: #f6f8fb !important;
+}
+
+html.light .settings-route .dashboard-sidebar {
+  border-color: #e2e8f0;
+  background: #ffffff;
+}
+
+html.light .settings-route .dashboard-sidebar a:first-child span:last-child {
+  color: #18212b;
+}
+
+html.light .settings-route .dashboard-nav-link {
+  color: #64748b;
+}
+
+html.light .settings-route .dashboard-nav-link svg {
+  color: #64748b;
+}
+
+html.light .settings-route .dashboard-nav-link:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+html.light .settings-route .dashboard-nav-link:hover svg {
+  color: #0e7490;
+}
+
+html.light .settings-route .dashboard-nav-active {
+  border-color: #67e8f9;
+  background: #ecfeff;
+  color: #0e7490;
+  box-shadow: inset 3px 0 0 #06b6d4;
+}
+
+html.light .settings-route .dashboard-nav-active svg {
+  color: #0891b2;
+}
+
+html.light .settings-route .dashboard-sidebar > div:last-child button {
+  border-color: #fecdd3;
+  background: #fff1f2;
+  color: #be123c;
+}
+
+html.light .settings-route .dashboard-sidebar > div:last-child button:hover {
+  border-color: #fda4af;
+  background: #ffe4e6;
+  color: #9f1239;
+}
+
+html.light .settings-route .dashboard-mobile-nav {
+  border-color: #dbe3ec;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+html.light .settings-route .dashboard-mobile-nav a {
+  color: #64748b;
+}
+
+html.light .settings-route .dashboard-mobile-nav a.bg-cyan-300\/10 {
+  background: #ecfeff;
+  color: #0e7490;
+}
+
+html.light .settings-shell {
+  background: #f6f8fb;
+  color: #18212b;
+}
+
+html.light .settings-shell .settings-header {
+  border-color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+html.light .settings-shell .settings-header h1 {
+  color: #18212b;
+}
+
+html.light .settings-shell .settings-header p {
+  color: #64748b;
+}
+
+html.light .settings-shell .settings-card {
+  border-color: #dbe3ec;
+  background: #ffffff;
+  box-shadow: 0 4px 18px rgba(30, 41, 59, 0.04);
+}
+
+html.light .settings-shell .settings-nav-card {
+  border-color: #dbe3ec;
+  background: #ffffff;
+}
+
+html.light .settings-shell .settings-nav-card:hover {
+  background: #f8fafc;
+  border-color: #67e8f9;
+}
+
+html.light .settings-shell .settings-muted,
+html.light .settings-shell [class~="text-gray-500"],
+html.light .settings-shell [class~="text-[#68706A]"],
+html.light .settings-shell [class~="text-[#747A70]"] {
+  color: #64748b;
+}
+
+html.light .settings-shell [class~="text-[#343A40]"],
+html.light .settings-shell [class~="text-[#3B4759]"],
+html.light .settings-shell [class~="text-[#5B6574]"],
+html.light .settings-shell [class~="text-[#30352D]"] {
+  color: #18212b;
+}
+
+html.light .settings-shell .settings-nav-card > span:first-child {
+  background: #eef0f2;
+  color: #64748b;
+}
+
+html.light .settings-shell input,
+html.light .settings-shell textarea {
+  border-color: #cbd5e1;
+  background: #ffffff;
+  color: #1e293b;
+}
+
+html.light .settings-shell input:disabled {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+html.light .settings-shell input::placeholder,
+html.light .settings-shell textarea::placeholder {
+  color: #94a3b8;
+}
+
+html.light .settings-shell .settings-sidebar-details,
+html.light .settings-shell [class~="border-[#ECEEEA]"] {
+  border-color: #e2e8f0;
+}
+
+html.light .settings-shell .settings-sidebar-link {
+  color: #64748b;
+}
+
+html.light .settings-shell .settings-sidebar-link:hover {
+  background: #f1f5f9;
+  color: #0e7490;
+}
+
+html.light .settings-shell .settings-sidebar-link-active {
+  background: #ecfeff;
+  color: #0e7490;
+  box-shadow: inset 3px 0 0 #06b6d4;
+}
+
+html.light .settings-shell .theme-toggle {
+  border-color: #dbe3ec;
+  background: #ffffff;
+  color: #475569;
+}
+
+html.light .settings-shell .theme-toggle:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+/* Dark settings cards should use the same near-black surfaces as the app shell. */
+html:not(.light) .settings-shell .settings-nav-card {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: #20202d;
+}
+
+html:not(.light) .settings-shell .settings-nav-card:hover {
+  border-color: rgba(103, 232, 249, 0.45);
+  background: #252536;
+}
+
+html:not(.light) .settings-shell .settings-nav-card [class~="text-[#30352D]"] {
+  color: #f1f5f9;
+}
+
+html:not(.light) .settings-shell .settings-nav-card [class~="text-[#747A70]"] {
+  color: #94a3b8;
+}
+
+html:not(.light) .settings-shell .settings-nav-card > span:first-child {
+  background: #2b2c39;
+  color: #a5f3fc;
+}
+
+html:not(.light) .settings-shell .settings-nav-card > svg {
+  color: #94a3b8;
+}
+
+html:not(.light) .settings-shell .settings-nav-card [class~="text-[#92988E]"] {
+  color: #94a3b8;
+}
+
+html:not(.light) .settings-shell .settings-nav-card:hover > svg {
+  color: #a5f3fc;
+}
+
+html:not(.light) .settings-shell .dashboard-user-summary p:first-child {
+  color: #f1f5f9;
+}
+
+html:not(.light) .settings-shell .dashboard-user-summary p:last-child {
+  color: #94a3b8;
+}
+
+.studio-shell .dashboard-user-summary p:first-child {
+  color: #f1f5f9;
+}
+
+.studio-shell .dashboard-user-summary p:last-child {
+  color: #94a3b8;
+}
+
+html.light .studio-shell .dashboard-user-summary p:first-child {
+  color: #18212b;
+}
+
+html.light .studio-shell .dashboard-user-summary p:last-child {
+  color: #64748b;
+}
+
+/* Improve contrast and interaction states for the main dashboard sidebar in light mode. */
+html.light .studio-shell aside .studio-nav-link {
+  color: #64748b;
+}
+
+html.light .studio-shell aside .studio-nav-link svg {
+  color: #64748b;
+}
+
+html.light .studio-shell aside .studio-nav-link:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+html.light .studio-shell aside .studio-nav-link:hover svg {
+  color: #0e7490;
+}
+
+html.light .studio-shell aside .studio-nav-active {
+  border-color: #67e8f9;
+  background: #ecfeff;
+  color: #0e7490;
+  box-shadow: inset 3px 0 0 #06b6d4;
+}
+
+html.light .studio-shell aside .studio-nav-active svg {
+  color: #0891b2;
+}
+
+html.light .studio-shell aside button {
+  border-color: #fecdd3;
+  background: #fff1f2;
+  color: #be123c;
+}
+
+html.light .studio-shell aside button:hover {
+  border-color: #fda4af;
+  background: #ffe4e6;
+  color: #9f1239;
+}
+
+.settings-shell .settings-discard-button {
+  border-color: #f2a9b4;
+  background: #fff7f8;
+  color: #be123c;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.settings-shell .settings-discard-button:hover {
+  border-color: #fb7185;
+  background: #ffe4e6;
+  color: #9f1239;
+}
+
+html:not(.light) .settings-shell .settings-discard-button {
+  border-color: rgba(251, 113, 133, 0.45);
+  background: rgba(159, 18, 57, 0.16);
+  color: #fda4af;
+}
+
+html:not(.light) .settings-shell .settings-discard-button:hover {
+  border-color: rgba(251, 113, 133, 0.7);
+  background: rgba(159, 18, 57, 0.3);
+  color: #fecdd3;
+}
+
 .studio-skeleton {
   border-radius: 1rem;
   background: linear-gradient(100deg, rgba(255,255,255,.06) 30%, rgba(255,255,255,.14) 50%, rgba(255,255,255,.06) 70%);

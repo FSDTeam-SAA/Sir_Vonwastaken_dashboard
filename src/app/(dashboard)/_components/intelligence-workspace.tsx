@@ -40,6 +40,7 @@ import {
 } from "@/lib/intelligence-hooks";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import DashboardUserSummary from "./dashboard-user-summary";
 import LogoutModal from "@/components/modals/logout-modal";
 import {
   StateEmpty,
@@ -128,7 +129,10 @@ export function Shell({
                 {title}
               </h1>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center gap-3">
+              <DashboardUserSummary />
+              <ThemeToggle />
+            </div>
           </div>
           <div className="mt-4 flex gap-1 overflow-x-auto lg:hidden ">
             {nav.map(({ href, label }) => {
@@ -375,9 +379,11 @@ function paginationItems(page: number, totalPages: number) {
 }
 export function DashboardHome() {
   const q = useDashboard();
+  const trendsQuery = useTrends();
   const sponsorships = useSponsorships();
   const drafts = useEmailDrafts();
   const trends = q.data?.top_trends || [];
+  const totalTrends = trendsQuery.data?.length ?? 0;
   const fb = useFeedback();
   const gen = useGenerate();
   const [generated, setGenerated] = useState<GeneratedPackage | null>(null);
@@ -391,10 +397,11 @@ export function DashboardHome() {
   );
   const refreshDashboard = () => {
     void q.refetch();
+    void trendsQuery.refetch();
     void sponsorships.refetch();
     void drafts.refetch();
   };
-  const isRefreshing = q.isFetching || sponsorships.isFetching || drafts.isFetching;
+  const isRefreshing = q.isFetching || trendsQuery.isFetching || sponsorships.isFetching || drafts.isFetching;
   if (!apiConfigured())
     return (
       <Shell title="Your signal, at a glance">
@@ -431,9 +438,9 @@ export function DashboardHome() {
         <>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <Stat
-              label="Backend status"
-              value={q.data?.mongodb_connected ? "Healthy" : "Connected"}
-              detail="API response received"
+              label="Total trends"
+              value={trendsQuery.isLoading ? "—" : totalTrends}
+              detail="Available trend opportunities"
               accent="bg-emerald-400"
             />
             <Stat
